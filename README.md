@@ -8,9 +8,9 @@ OpenJDK8的Docker编译环境
 
 只测试了两个版本
 
-[jdk8u292-b01](https://github.com/openjdk/jdk8u/tree/jdk8u292-b01)
+[jdk8u292-b01](https://github.com/openjdk/jdk8u/archive/refs/tags/jdk8u292-b01.zip)
 
-[jdk8u20-b32](https://github.com/openjdk/jdk8u/tree/jdk8u20-b32)
+[jdk8u20-b32](https://github.com/openjdk/jdk8u/archive/refs/tags/jdk8u20-b32.zip)
 
 ## JDK源码下载
 
@@ -39,6 +39,43 @@ docker run -it -v [jdk源码路径]:/jdk_src -e debug_level=fastdebug jdk8u_buil
 
 ![img](gdb.png)
 
+---
+
+如果使用vscode来进行C/C++调试:
+
+1. 在`调试控制台窗口中`运行`-exec set substitute-path /jdk_src [jdk源码路径]`来重新设置源码路径
+2. 在`lauch.json`的配置中加入`sourceFileMap`节进行映射，改完以后有个几秒钟的刷新时间:
+```JSON
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) 启动",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/jdk_build/jdk8u20-b32/build/linux-x86_64-normal-server-slowdebug/jdk/bin/java",
+            "args": ["forName_test"],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "为 gdb 启用整齐打印",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],"sourceFileMap": {
+                "/jdk_src":"/jdk_build/jdk8u20-b32/"
+            }
+        }
+    ]
+}
+```
+效果：
+![](vscode.png)
+
 ## 有关OpenJDK与OracleJDK的关系
 
 OpenJDK是Sun在2006年末把Java开源而形成的项目.
@@ -55,18 +92,18 @@ Oracle的项目发布经理Joe Darcy在OSCON 2011上对两者关系的介绍也�
 
 Oracle/Sun JDK里面包含的JVM是HotSpotVM，HotSpot VM只有非常非常少量的功能没有在OpenJDK里，那部分在Oracle内部的代码库里。这些私有部分都不涉及JVM的核心功能。所以说，Oracle/Sun JDK与OpenJDK其实使用的是同一个代码库。
 
-从一个Oracle内部员工的角度来看，当他要构建OracleJDK时，他同样需要先从http://hg.openjdk.java.net签出OpenJDK，然后从Oracle内部的代码库签出私有的部分，放在OpenJDK代码下的一个特定目录里，然后构建。
+从一个Oracle内部员工的角度来看，当他要构建OracleJDK时，他同样需要先从http://hg.openjdk.java.net 签出OpenJDK，然后从Oracle内部的代码库签出私有的部分，放在OpenJDK代码下的一个特定目录里，然后构建。
 
 不过，Oracle JDK只发布二进制安装包，而OpenJDK只发布源码。
 
 
 ## 其他说明
 
-1. 在测试编译8u20的时候，需要使用低版本的make，这里我用的是make3.8.1
+1. 在测试编译8u20的时候，make会报参数错误，需要使用低版本的make，这里我用的是make3.8.1
 
 2. Docker环境下需要手工指定freetype的位置,编译脚本里已经写好了
 
-3. jdk8u20源码没有`--with-native-debug-symbols`没有这个选项，脚本中做了一个判断。
+3. jdk8u20源码没有`--with-native-debug-symbols`没有这个选项，编译脚本中做了一个判断。
 
 4. 感谢phith0n师傅给的指导，之前编译jdk8u20好久都没编译过去，Docker太香了。
 
@@ -83,6 +120,8 @@ Oracle/Sun JDK里面包含的JVM是HotSpotVM，HotSpot VM只有非常非常少�
 [https://zhuanlan.zhihu.com/p/108675511](https://zhuanlan.zhihu.com/p/108675511)
 
 有关OpenJDK的编译：
+
+[https://t.zsxq.com/eQbAuJm](https://t.zsxq.com/eQbAuJm)
 
 [https://blog.ldkxingzhe.top/2019/10/15/openjdk-compile-and-debug-with-clion/](https://blog.ldkxingzhe.top/2019/10/15/openjdk-compile-and-debug-with-clion/)
 
